@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sophie's Easter Hunt</title>
+<style>
+body {margin:0; overflow:hidden; font-family:'Segoe UI',sans-serif; background:#000;}
+#bg {position: fixed; inset:0; background-size: cover; background-position: center; z-index:-2;}
+
+/* Hypnotic spiral – blue neon effect */
+#spiral {
+  position: fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(circle, rgba(0,150,255,0.5) 2%, transparent 2%) repeat,
+    radial-gradient(circle, rgba(0,200,255,0.4) 2%, transparent 2%) repeat,
+    radial-gradient(circle, rgba(0,255,255,0.3) 2%, transparent 2%) repeat;
+  background-size:40px 40px, 80px 80px, 120px 120px;
+  animation: spin 120s linear infinite, pulse 6s ease-in-out infinite alternate, hueShift 12s linear infinite;
+  mix-blend-mode: screen;
+}
+@keyframes spin {0%{transform: rotate(0deg);}100%{transform: rotate(360deg);}}
+@keyframes pulse {0%{transform: scale(0.95) rotate(0deg); opacity:0.9;}100%{transform: scale(1.05) rotate(360deg); opacity:1;}}
+@keyframes hueShift {0%{filter: hue-rotate(0deg);}100%{filter: hue-rotate(360deg);}}
+
+/* Intro */
+#intro {position:fixed; inset:0; background:linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:200; text-align:center; color:white; animation:fadeIn 1s ease forwards;}
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+#intro h1 {font-size:60px; margin-bottom:10px;}
+#intro p {font-size:22px; margin-bottom:20px; color:#ccc;}
+#intro button {padding:15px 30px; font-size:20px; border:none; border-radius:12px; cursor:pointer; background:#4fc3f7; color:#fff; box-shadow:0 5px 15px rgba(0,0,0,0.4); transition: transform 0.2s;}
+#intro button:hover {transform:scale(1.05);}
+
+/* Score & Health */
+#score {position:fixed; top:20px; left:15px; font-size:28px; background:rgba(255,255,255,0.2); color:white; padding:12px 25px; border-radius:15px; z-index:10; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.3);}
+#healthBarContainer {position:fixed; top:20px; left:50%; transform:translateX(-50%); width:200px; height:12px; background:rgba(255,255,255,0.3); border-radius:12px; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+#healthBar {width:100%; height:100%; background:white; border-radius:12px; transition:width 0.1s;}
+
+/* Throne/Spoil buttons – small & lower-right */
+#throneBtn, #throneLostBtn {
+  position: fixed; bottom:10px; right:10px;
+  padding:6px 12px; font-size:14px; border:none; border-radius:10px;
+  background:#4fc3f7; color:white; cursor:pointer; z-index:10;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3); transition: transform 0.2s;
+}
+#throneBtn:hover, #throneLostBtn:hover {transform:scale(1.05);}
+
+/* Gallery */
+#galleryBtn {position:fixed; top:20px; right:15px; padding:10px 15px; border-radius:10px; border:none; cursor:pointer; z-index:10;}
+#galleryOverlay {position:fixed; inset:0; background:rgba(0,0,0,0.95); display:none; align-items:center; justify-content:center; z-index:200;}
+#galleryModal {width:80%; max-width:900px; max-height:80%; background:#222; color:white; border-radius:20px; padding:20px; display:flex; flex-direction:column; box-shadow:0 0 30px rgba(0,0,0,0.8);}
+#galleryModal h2 {text-align:center; margin-bottom:15px;}
+#galleryGrid {display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:15px; overflow-y:auto; padding:10px; scrollbar-width: thin; scrollbar-color: #4fc3f7 #222;}
+#galleryGrid::-webkit-scrollbar { width:8px; }
+#galleryGrid::-webkit-scrollbar-thumb { background-color:#4fc3f7; border-radius:4px; }
+#galleryGrid img {width:100%; border-radius:10px; cursor:pointer; border:2px solid #444; transition: transform 0.2s, box-shadow 0.2s;}
+#galleryGrid img:hover {transform:scale(1.05); box-shadow:0 0 15px #4fc3f7;}
+.downloadBtn {margin-top:10px; padding:8px 12px; border:none; border-radius:8px; background:#4fc3f7; color:white; cursor:pointer; font-size:14px;}
+
+/* Eggs */
+.egg {position:absolute; border-radius:50% 50% 45% 45%; cursor:pointer; box-shadow:0 5px 15px rgba(0,0,0,0.5); transition: transform 0.2s;}
+.egg:hover {transform:scale(1.1);}
+.gold {box-shadow:0 0 25px gold,0 5px 20px rgba(0,0,0,0.6);}
+
+/* Popup */
+.popup-img {position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.6); opacity:0; pointer-events:none; z-index:100; animation:popFloat 3s ease forwards;}
+.popup-img img {max-width:320px; border-radius:20px; border:4px solid white;}
+@keyframes popFloat {0%{opacity:0; transform:translate(-50%,-70%) scale(0.5);}20%{opacity:1; transform:translate(-50%,-50%) scale(1);}80%{opacity:1;}100%{opacity:0; transform:translate(-50%,-30%) scale(0.9);}}
+
+/* Lost screen */
+#lostScreen {position:fixed; inset:0; background:rgba(0,0,0,0.95); color:#ff5555; display:none; flex-direction:column; justify-content:center; align-items:center; z-index:300; font-family:'Segoe UI',sans-serif; text-align:center;}
+#lostScreen h1 {font-size:60px; margin-bottom:20px;}
+#lostScreen p {font-size:24px; margin-bottom:15px;}
+#playAgainBtn {padding:12px 20px; font-size:18px; border:none; border-radius:12px; background:#4fc3f7; color:white; cursor:pointer; transition: transform 0.2s; margin-bottom:10px;}
+#lostScreen button:hover {transform:scale(1.05);}
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+<div id="spiral"></div>
+
+<div id="intro">
+  <h1>Sophie's Easter Hunt</h1>
+  <p>Time to hunt some eggs for your Goddess ^^</p>
+  <button onclick="startGame()">Start Game</button>
+</div>
+
+<div id="score">0</div>
+<div id="healthBarContainer"><div id="healthBar"></div></div>
+<button id="galleryBtn" onclick="openGallery()">Gallery</button>
+<button id="throneBtn" onclick="visitThrone()">Spoil me :3</button>
+
+<div id="galleryOverlay">
+  <div id="galleryModal">
+    <h2>Your earned collection</h2>
+    <div id="galleryGrid"></div>
+    <button onclick="closeGallery()">Close</button>
+  </div>
+</div>
+
+<div id="lostScreen">
+  <h1>You Lost Cutie!</h1>
+  <p>Keep trying to get more rewards :3</p>
+  <button id="playAgainBtn" onclick="restartGame()">Play Again</button>
+  <button id="throneLostBtn" onclick="visitThrone()">Spoil me :3</button>
+</div>
+
+<audio id="bgAudio" src="https://raw.githubusercontent.com/GoddessSophie/GoddessSophie.github.io/main/audios/audio.mp3" autoplay loop></audio>
+<audio id="rewardAudio"></audio>
+
+<script>
+const bgAudio=document.getElementById("bgAudio");
+bgAudio.volume=1.0; bgAudio.play().catch(()=>{});
+
+let score=0, nextReward=100, gameStarted=false, unlocked=new Set();
+let normalImages=[], specialImages=[];
+let health=100, lastClick=Date.now();
+let inGallery=false, lost=false;
+
+document.getElementById("bg").style.backgroundImage="url('https://raw.githubusercontent.com/GoddessSophie/GoddessSophie.github.io/main/Backgrounds/EasterBg.jpg')";
+
+async function loadImages(){
+  const normal=await fetch("https://api.github.com/repos/GoddessSophie/GoddessSophie.github.io/contents/images").then(r=>r.json());
+  const special=await fetch("https://api.github.com/repos/GoddessSophie/GoddessSophie.github.io/contents/rewards").then(r=>r.json());
+  normalImages=normal.filter(f=>f.type==="file").map(f=>f.download_url);
+  specialImages=special.filter(f=>f.type==="file").map(f=>f.download_url);
+}
+loadImages();
+
+function startGame(){document.getElementById("intro").style.display="none"; gameStarted=true; score=0; health=100; lastClick=Date.now(); lost=false; document.getElementById("score").innerText="0"; document.getElementById("healthBar").style.width="100%";}
+function restartGame(){document.getElementById("lostScreen").style.display="none"; startGame();}
+function visitThrone(){window.open('https://throne.com/goddessopphie/item/0fbf6b41-a522-46c7-beba-a2b053747450','_blank');}
+
+const colors=["#FF5F6D","#FFC371","#36D1DC","#5B86E5","#FF9A8B","#FAD0C4","#A18CD1","#FBC2EB","#8EC5FC","#D4FC79","#FDEB71","#A1FFCE"];
+function getEggType(){const r=Math.random(); const color=colors[Math.floor(Math.random()*colors.length)]; if(r<0.7)return {size:70,color:color,type:"normal"}; if(r<0.9)return {size:50,color:color,type:"normal"}; return {size:60,color:"gold",type:"gold"};}
+function getUnique(arr){const available=arr.filter(i=>!unlocked.has(i)); if(available.length===0) return null; return available[Math.floor(Math.random()*available.length)];}
+function spawnEgg(){
+  if(!gameStarted || lost) return;
+  const data=getEggType();
+  const egg=document.createElement("div");
+  egg.className="egg"+(data.type==="gold"?" gold":"");
+  egg.style.width=data.size+"px"; egg.style.height=data.size*1.2+"px";
+  egg.style.background=data.type==="gold"?"linear-gradient(135deg,#fff7cc,#ffd700)":`linear-gradient(135deg,#222,${data.color})`;
+  egg.style.left=Math.random()*(window.innerWidth-data.size)+"px"; egg.style.top=Math.random()*(window.innerHeight-data.size)+"px";
+  egg.onclick=()=>{
+    const gained=Math.floor(Math.random()*9)+10;
+    score+=gained;
+    health=Math.min(100, health+10); // more health gained
+    lastClick=Date.now();
+    document.getElementById("score").innerText=score;
+    updateHealth();
+    egg.remove();
+    if(score>=nextReward){showReward(data.type); nextReward+=Math.floor(Math.random()*50)+100;}
+  };
+  document.body.appendChild(egg);
+  setTimeout(()=>egg.remove(),2500);
+}
+
+function updateHealth(){if(inGallery || lost) return; document.getElementById("healthBar").style.width=health+"%"; if(health<=0) triggerLostScreen();}
+function showReward(type){
+  const audio=document.getElementById("rewardAudio");
+  const moans=[
+    "https://raw.githubusercontent.com/GoddessSophie/GoddessSophie.github.io/main/Moans/moan1.mp3",
+    "https://raw.githubusercontent.com/GoddessSophie/GoddessSophie.github.io/main/Moans/moan2.mp3",
+    "https://raw.githubusercontent.com/GoddessSophie/GoddessSophie.github.io/main/Moans/moan3.mp3"
+  ];
+  const pool=type==="gold"?specialImages:normalImages;
+  const imgUrl=getUnique(pool); if(!imgUrl) return; unlocked.add(imgUrl);
+  const popup=document.createElement("div"); popup.className="popup-img";
+  const img=document.createElement("img"); img.src=imgUrl;
+  img.onclick=()=>{ const link=document.createElement('a'); link.href=imgUrl; link.download=''; link.click(); };
+  popup.appendChild(img); document.body.appendChild(popup);
+  const randomSound=moans[Math.floor(Math.random()*moans.length)];
+  audio.src=randomSound; audio.play();
+  setTimeout(()=>popup.remove(),3000);
+}
+
+function openGallery(){inGallery=true; const grid=document.getElementById("galleryGrid"); grid.innerHTML="";
+  unlocked.forEach(src=>{
+    const wrapper=document.createElement('div'); wrapper.style.display='flex'; wrapper.style.flexDirection='column'; wrapper.style.alignItems='center';
+    const img=document.createElement("img"); img.src=src; img.onclick=()=>{ const link=document.createElement('a'); link.href=src; link.download=''; link.click(); };
+    const btn=document.createElement('button'); btn.innerText='Download'; btn.className='downloadBtn';
+    btn.onclick=()=>{ const link=document.createElement('a'); link.href=src; link.download=''; link.click(); };
+    wrapper.appendChild(img); wrapper.appendChild(btn); grid.appendChild(wrapper);
+  });
+  document.getElementById("galleryOverlay").style.display="flex";
+}
+function closeGallery(){inGallery=false; document.getElementById("galleryOverlay").style.display="none";}
+function triggerLostScreen(){lost=true; document.getElementById("lostScreen").style.display="flex";}
+
+setInterval(spawnEgg,300);
+setInterval(()=>{if(!gameStarted || inGallery || lost) return; const now=Date.now(); if(now-lastClick>500){health-=5; if(health<0) health=0; updateHealth();}},100);
+</script>
+</body>
+</html>
