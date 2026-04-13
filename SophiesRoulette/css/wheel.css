@@ -1,0 +1,179 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    background-image: url('../images/wheelbackground.jpg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+  }
+
+  #spin_the_wheel {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    width: 80vw;
+    /* Set width to 80% of the viewport width */
+    height: 80vw;
+    /* Set height to 80% of the viewport width (so the wheel remains circular) */
+    max-width: 800px;
+    /* Limit maximum width for large screens */
+    max-height: 800px;
+    /* Limit maximum height for large screens */
+  }
+
+  #wheel {
+    display: block;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+    width: 100%;
+    /* Make sure the canvas takes up the full size of its container */
+    height: 100%;
+    /* Make sure the canvas takes up the full size of its container */
+  }
+
+  #spin {
+    font: 1.5em/0 "Lato", sans-serif;
+    user-select: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 60%;
+    left: 60%;
+    width: 10%;
+    height: 10%;
+    margin: -15%;
+    background: #fff;
+    color: #fff;
+    box-shadow: 0 0 0 8px currentColor, 0 0px 15px 5px rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    transition: 0.8s;
+  }
+
+  #spin::after {
+    content: "";
+    position: absolute;
+    top: -17px;
+    border: 10px solid transparent;
+    border-bottom-color: currentColor;
+    border-top: none;
+  }
+
+  /* Media queries for mobile responsiveness */
+  @media (max-width: 600px) {
+    #spin_the_wheel {
+      width: 90vw;
+      /* 90% of viewport width */
+      height: 90vw;
+      /* 90% of viewport width for a responsive circle */
+    }
+
+    #spin {
+      font-size: 0.8em;
+      /* Reduce font size on smaller screens */
+      width: 15%;
+      /* Increase button size */
+      height: 15%;
+      /* Increase button size */
+      margin: -17.5%;
+      /* Adjust margin to keep button centered */
+    }
+  }
+
+  /* Modal Styles */
+  .modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    z-index: 1;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Background with opacity */
+    padding-top: 60px;
+    overflow: auto;
+    /* Enable scroll if needed */
+    box-sizing: border-box;
+  }
+
+  .modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    /* Center the modal */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    /* Width of the modal */
+    max-width: 500px;
+    /* Maximum width */
+    text-align: center;
+    font-family: "Lato", sans-serif;
+  }
+
+  .modal-content a {
+    text-decoration: none;
+  }
+
+  .modal-title {
+    margin-bottom: 10px;
+  }
+
+  .close {
+    color: #497dee;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: #5586f0;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  #resultText {
+    font-size: 1.2em;
+    color: #333;
+  }
+
+  a.button-link {
+    display: inline-block;
+    background-color: #497dee;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  a.button-link:hover {
+    background-color: #5586f0;
+    transform: scale(1.05);
+  }
+
+  a.button-link:active {
+    background-color: #5586f0;
+    transform: scale(0.98);
+  }
+
+  a.button-link #resultText {
+    color: #ffffff;
+  }
